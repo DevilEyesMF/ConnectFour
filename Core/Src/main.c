@@ -90,6 +90,9 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  char red[6];
+  char yellow[6];
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -98,6 +101,9 @@ int main(void)
 #pragma ide diagnostic ignored "EndlessLoop"
   while (1)
   {
+
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
