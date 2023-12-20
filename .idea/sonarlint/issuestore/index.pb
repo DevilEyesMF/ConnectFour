@@ -19,3 +19,12 @@ G
 Core/Src/stm32g0xx_it.c,f\d\fd43d86960ba3449e4520c8321031f009f1375a0
 `
 0Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal.c,4\5\45c1884972b9f7bae07fb8678459b43651651cbc
+?
+ConnectFour.ioc,7\3\732f887199e22a8ff348410b29610893c06b52c5
+e
+5Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_gpio.c,4\3\4391a813594959a317f75962b3f1cfba6db9b8bf
+d
+4Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_i2c.c,8\a\8a31ebdbaace4d8c3fbb64019919462c39578925
+:
+
+.mxproject,d\e\decd066c230086d2f7c67ef3567150196d926ffd
