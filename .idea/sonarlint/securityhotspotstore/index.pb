@@ -13,3 +13,9 @@ S
 -.idea/sonarlint/securityhotspotstore/index.pb,8\8\88a9255124c95bdc913197c120a8d560edc59c8e
 ?
 Core/Inc/main.h,a\b\ab5448d2bf166497902f0f90cfc0ee05a8002c57
+C
+Core/Src/syscalls.c,6\6\66e65f5ede7b3b4fb37f07106429bc4afb6dc97a
+G
+Core/Src/stm32g0xx_it.c,f\d\fd43d86960ba3449e4520c8321031f009f1375a0
+`
+0Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal.c,4\5\45c1884972b9f7bae07fb8678459b43651651cbc

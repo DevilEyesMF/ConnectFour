@@ -34,7 +34,7 @@ typedef enum {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define LED_DRIVER_ADDRESS 0x8a
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,8 +54,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-void updateMatrix(const char* red, const char* yel);
-void setLedDriver(Color color, char data);
+void updateMatrix(const uint8_t* red, const uint8_t* yellow);
+void setLedDriver(Color color, uint8_t data);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -79,15 +79,15 @@ int main(void)
     HAL_Init();
 
     /* USER CODE BEGIN Init */
-    char red[6];
-    char yellow[6];
+    uint8_t red[7] = {0b01000000, 0, 0, 0, 0, 0, 0};
+    uint8_t yellow[7] = {0, 0b00100000, 0, 0, 0, 0, 0};
     /* USER CODE END Init */
 
     /* Configure the system clock */
     SystemClock_Config();
 
     /* USER CODE BEGIN SysInit */
-
+    __enable_irq();
     /* USER CODE END SysInit */
 
     /* Initialize all configured peripherals */
@@ -267,7 +267,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void updateMatrix(const char* red, const char* yel)
+void updateMatrix(const uint8_t* red, const uint8_t* yellow)
 {
     static const uint16_t Pin[] = {
             0x0010,
@@ -282,14 +282,14 @@ void updateMatrix(const char* red, const char* yel)
     for (int row = 0; row <= 6; row++)
     {
         setLedDriver(RED, red[row]);
-        setLedDriver(YELLOW, yel[row]);
+        setLedDriver(YELLOW, yellow[row]);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_RESET);
         HAL_Delay(1);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_SET);
     }
 }
 
-void setLedDriver(Color color, char data)
+void setLedDriver(Color color, uint8_t data)
 {
     if (!color)
     {
@@ -301,6 +301,7 @@ void setLedDriver(Color color, char data)
     }
 
     // I2C
+    HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &data, sizeof(data), HAL_MAX_DELAY);
 
     if (!color)
     {
