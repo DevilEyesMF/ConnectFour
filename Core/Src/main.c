@@ -54,7 +54,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-void updateMatrix(char* red, char* yel);
+void updateMatrix(const char* red, const char* yel);
 void setLedDriver(Color color, char data);
 /* USER CODE END PFP */
 
@@ -267,7 +267,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void updateDisplay(const char* red, const char* yel)
+void updateMatrix(const char* red, const char* yel)
 {
     static const uint16_t Pin[] = {
             0x0010,
