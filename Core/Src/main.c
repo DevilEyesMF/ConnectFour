@@ -54,8 +54,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-void updateMatrix(const uint8_t* red, const uint8_t* yellow);
-void setLedDriver(Color color, uint8_t data);
+void updateMatrix(uint8_t* red, uint8_t* yellow);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -267,51 +266,37 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void updateMatrix(const uint8_t* red, const uint8_t* yellow)
+void updateMatrix(uint8_t* red, uint8_t* yellow)
 {
     static const uint16_t Pin[] = {
-            0x0010,
-            0x0020,
-            0x0040,
-            0x0080,
-            0x0100,
-            0x0800,
-            0x1000
+            ROW0_Pin,
+            ROW1_Pin,
+            ROW2_Pin,
+            ROW3_Pin,
+            ROW4_Pin,
+            ROW5_Pin,
+            ROW6_Pin
     };
 
     for (int row = 0; row <= 6; row++)
     {
-        setLedDriver(RED, red[row]);
-        setLedDriver(YELLOW, yellow[row]);
+        // RED
+        HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
+        HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &red[row], sizeof(red[row]), HAL_MAX_DELAY);
+        HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_RESET);
+        HAL_Delay(1);
+        HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_SET);
+        // YELLOW
+        HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
+        HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &yellow[row], sizeof(yellow[row]), HAL_MAX_DELAY);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_RESET);
         HAL_Delay(1);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_SET);
     }
 }
 
-void setLedDriver(Color color, uint8_t data)
-{
-    if (color == RED)
-    {
-        HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_RESET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_RESET);
-    }
-
-    // I2C
-    HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &data, sizeof(data), HAL_MAX_DELAY);
-
-    if (color == RED)
-    {
-        HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
-    }
-    else
-    {
-        HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
-    }
-}
 /* USER CODE END 4 */
 
 /**
