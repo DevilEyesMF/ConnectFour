@@ -78,8 +78,7 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
-void __attribute__((naked)) SysTickDelayCount(unsigned long);
-void updateMatrix(uint8_t* red, uint8_t* yellow);
+void heartScroll(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -104,27 +103,6 @@ int main(void)
 
     /* USER CODE BEGIN Init */
     uint8_t matrix_buffer[2][7];
-
-    uint8_t heart[2][7] = {
-            {
-                    0b00000000,
-                    0b00110110,
-                    0b01001001,
-                    0b01000001,
-                    0b00100010,
-                    0b00010100,
-                    0b00001000
-            },
-            {
-                    0b00000000,
-                    0b00000000,
-                    0b00110110,
-                    0b00111110,
-                    0b00011100,
-                    0b00001000,
-                    0b00000000
-            }
-    };
     /* USER CODE END Init */
 
     /* Configure the system clock */
@@ -148,25 +126,7 @@ int main(void)
 #pragma ide diagnostic ignored "EndlessLoop"
     while (1)
     {
-        for (int i = -7; i <= 7; i++)
-        {
-            for (int row = 0; row < 7; row++)
-            {
-                if (i < 0)
-                {
-                    matrix_buffer[RED][row] = heart[RED][row] << -i;
-                    matrix_buffer[YELLOW][row] = heart[YELLOW][row] << -i;
-                }
-                else
-                {
-                    matrix_buffer[RED][row] = heart[RED][row] >> i;
-                    matrix_buffer[YELLOW][row] = heart[YELLOW][row] >> i;
-                }
-            }
-            memcpy(matrix[RED], matrix_buffer[RED], 7);
-            memcpy(matrix[YELLOW], matrix_buffer[YELLOW], 7);
-            HAL_Delay(250);
-        }
+        heartScroll();
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -412,6 +372,52 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     if(GPIO_Pin == BTN_MID_Pin)
     {
         buttonFlags |= MID;
+    }
+}
+
+void heartScroll()
+{
+    uint8_t matrix_buffer[2][7];
+
+    static const uint8_t heart[2][7] = {
+            {
+                    0b00000000,
+                    0b00110110,
+                    0b01001001,
+                    0b01000001,
+                    0b00100010,
+                    0b00010100,
+                    0b00001000
+            },
+            {
+                    0b00000000,
+                    0b00000000,
+                    0b00110110,
+                    0b00111110,
+                    0b00011100,
+                    0b00001000,
+                    0b00000000
+            }
+    };
+
+    for (int i = -7; i <= 7; i++)
+    {
+        for (int row = 0; row < 7; row++)
+        {
+            if (i < 0)
+            {
+                matrix_buffer[RED][row] = (uint8_t)(heart[RED][row] << -i);
+                matrix_buffer[YELLOW][row] = (uint8_t)(heart[YELLOW][row] << -i);
+            }
+            else
+            {
+                matrix_buffer[RED][row] = heart[RED][row] >> i;
+                matrix_buffer[YELLOW][row] = heart[YELLOW][row] >> i;
+            }
+        }
+        memcpy(matrix[RED], matrix_buffer[RED], 7);
+        memcpy(matrix[YELLOW], matrix_buffer[YELLOW], 7);
+        HAL_Delay(250);
     }
 }
 

@@ -42,3 +42,7 @@ G.idea/sonarlint/issuestore/9/f/9fe84ebb15faf917b7def6236dba604453cc61e0,f\0\f0
 Q.idea/sonarlint/securityhotspotstore/9/f/9fe84ebb15faf917b7def6236dba604453cc61e0,b\b\bbf202272a96de5cd6b6828ffdc55fb3ce45289c
 M
 Core/Inc/stm32g0xx_hal_conf.h,6\6\66b778d91290dd96bb2eb0e16859daefaf2ef137
+d
+4Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_tim.c,e\8\e87ab7c1034652dda272f44011f0887923dbc556
+d
+4Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_tim.h,d\a\da6b283efa2e944a70610c0c238249c1488fcd63
