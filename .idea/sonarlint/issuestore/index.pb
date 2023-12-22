@@ -28,13 +28,17 @@ d
 :
 
 .mxproject,d\e\decd066c230086d2f7c67ef3567150196d926ffd
-L
-Core/Src/stm32g0xx_hal_msp.c,e\1\e14a68d3d023223ced5eccabc22a1fb9a081e2da
-`
-0Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal.h,4\6\46b9c828db424be6931736600ce42cc61eb0c252
-d
-4Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_tim.c,e\8\e87ab7c1034652dda272f44011f0887923dbc556
+Å
+Q.idea/sonarlint/securityhotspotstore/8/8/88a9255124c95bdc913197c120a8d560edc59c8e,9\0\909762385fc6eb20f922a91c6865741308b57f2c
+w
+G.idea/sonarlint/issuestore/9/a/9a2aa4db38d3115ed60da621e012c0efc0172aae,1\e\1e30e05b5189731ee9be6add1ef16336cdd01e07
+w
+G.idea/sonarlint/issuestore/8/8/88a9255124c95bdc913197c120a8d560edc59c8e,a\e\ae9ddf453f55affea2d6b9e3973cac1eb2efb4e1
+Å
+Q.idea/sonarlint/securityhotspotstore/9/a/9a2aa4db38d3115ed60da621e012c0efc0172aae,e\4\e4b358d3d9fb3f2eec26eec20d2a1995e2cbfd1f
+w
+G.idea/sonarlint/issuestore/9/f/9fe84ebb15faf917b7def6236dba604453cc61e0,f\0\f0e0f9cec86fe4b939ae22be5264c758801eb28f
+Å
+Q.idea/sonarlint/securityhotspotstore/9/f/9fe84ebb15faf917b7def6236dba604453cc61e0,b\b\bbf202272a96de5cd6b6828ffdc55fb3ce45289c
 M
 Core/Inc/stm32g0xx_hal_conf.h,6\6\66b778d91290dd96bb2eb0e16859daefaf2ef137
-G
-Core/Inc/stm32g0xx_it.h,e\3\e3a5d54d8bd1d7a2bdec10f3d0766a321f9fdead

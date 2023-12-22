@@ -49,8 +49,17 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim14;
 
 /* USER CODE BEGIN PV */
-uint8_t red_global[7];
-uint8_t yellow_global[7];
+uint8_t matrix[2][7];
+
+const uint16_t ROW[] = {
+        ROW0_Pin,
+        ROW1_Pin,
+        ROW2_Pin,
+        ROW3_Pin,
+        ROW4_Pin,
+        ROW5_Pin,
+        ROW6_Pin
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,25 +128,25 @@ int main(void)
                     0b00000000
             }
     };
-/* USER CODE END Init */
+    /* USER CODE END Init */
 
-/* Configure the system clock */
+    /* Configure the system clock */
     SystemClock_Config();
 
-/* USER CODE BEGIN SysInit */
+    /* USER CODE BEGIN SysInit */
     __enable_irq();
-/* USER CODE END SysInit */
+    /* USER CODE END SysInit */
 
-/* Initialize all configured peripherals */
+    /* Initialize all configured peripherals */
     MX_GPIO_Init();
     MX_I2C1_Init();
     MX_TIM14_Init();
-/* USER CODE BEGIN 2 */
+    /* USER CODE BEGIN 2 */
     HAL_TIM_Base_Start_IT(&htim14);
-/* USER CODE END 2 */
+    /* USER CODE END 2 */
 
-/* Infinite loop */
-/* USER CODE BEGIN WHILE */
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
     while (1)
@@ -146,7 +155,7 @@ int main(void)
         {
             for (int row = 0; row < 7; row++)
             {
-                if(i < 0)
+                if (i < 0)
                 {
                     red[row] = heart[RED][row] << -i;
                     yellow[row] = heart[YELLOW][row] << -i;
@@ -156,17 +165,17 @@ int main(void)
                     red[row] = heart[RED][row] >> i;
                     yellow[row] = heart[YELLOW][row] >> i;
                 }
-                            }
-            memcpy(red_global, red, 7);
-            memcpy(yellow_global, yellow, 7);
-            HAL_Delay(200);
+            }
+            memcpy(matrix[RED], red, 7);
+            memcpy(matrix[YELLOW], yellow, 7);
+            HAL_Delay(250);
         }
-/* USER CODE END WHILE */
+        /* USER CODE END WHILE */
 
-/* USER CODE BEGIN 3 */
+        /* USER CODE BEGIN 3 */
     }
 #pragma clang diagnostic pop
-/* USER CODE END 3 */
+    /* USER CODE END 3 */
 }
 
 /**
@@ -280,7 +289,7 @@ static void MX_TIM14_Init(void)
     htim14.Instance = TIM14;
     htim14.Init.Prescaler = 6400 - 1;
     htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim14.Init.Period = 100 - 1;
+    htim14.Init.Period = 5 - 1;
     htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
@@ -328,7 +337,7 @@ static void MX_GPIO_Init(void)
 
     /*Configure GPIO pins : BTN_LEFT_Pin BTN_MID_Pin BTN_RIGHT_Pin BTN_RESTART_Pin */
     GPIO_InitStruct.Pin = BTN_LEFT_Pin | BTN_MID_Pin | BTN_RIGHT_Pin | BTN_RESTART_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -353,49 +362,36 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void __attribute__((naked)) SysTickDelayCount(unsigned long ulCount)
-{
-    __asm("sub r0, #1\n"
-          "bne SysTickDelayCount\n"
-          "bx lr");
-}
-
-void updateMatrix(uint8_t* red, uint8_t* yellow)
-{
-    static const uint16_t Pin[] = {
-            ROW0_Pin,
-            ROW1_Pin,
-            ROW2_Pin,
-            ROW3_Pin,
-            ROW4_Pin,
-            ROW5_Pin,
-            ROW6_Pin
-    };
-
-    for (int row = 0; row <= 6; row++)
-    {
-        // RED
-        HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
-        HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &red[row], sizeof(red[row]), HAL_MAX_DELAY);
-        HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_RESET);
-        SysTickDelayCount(1000);
-        HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_SET);
-        // YELLOW
-        HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
-        HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &yellow[row], sizeof(yellow[row]), HAL_MAX_DELAY);
-        HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_RESET);
-        SysTickDelayCount(1000);
-        HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_SET);
-    }
-}
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM14)
     {
-        updateMatrix(red_global, yellow_global);
+        static int row = 0;
+        static int prevRow = 0;
+        static Color color = RED;
+
+        HAL_GPIO_WritePin(GPIOA, ROW[prevRow], GPIO_PIN_SET);
+        if (color == RED)
+        {
+            HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
+        }
+        else
+        {
+            HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
+        }
+        HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1,
+                          &matrix[color][row], sizeof(matrix[color][row]), HAL_MAX_DELAY);
+        HAL_GPIO_WritePin(GPIOA, ROW[row], GPIO_PIN_RESET);
+
+        prevRow = row;
+
+        if (row == 6) row = 0;
+        else row++;
+
+        if (color == RED) color = YELLOW;
+        else color = RED;
     }
 }
 

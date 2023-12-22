@@ -1,6 +1,5 @@
 
-uc:S5276—"Uimplicit conversion loses integer precision: 'int' to 'uint8_t' (aka 'unsigned char')(²¡—çÿÿÿÿÿ8Ôà±úÈ1
-uc:S5276˜"Uimplicit conversion loses integer precision: 'int' to 'uint8_t' (aka 'unsigned char')(÷Š¸‚ùÿÿÿÿ8šö±úÈ1
-fc:S134•"MRefactor this code to not nest more than 3 if|for|do|while|switch statements.(¦àşI8µ¡¬úÈ1
-Fc:S1172ä"&Remove the unused parameter "ulCount".(Ç²Ğôşÿÿÿÿ8ö¿¬úÈ1
-‚c:S995Š"hMake the type of this parameter a pointer-to-const. The current type of "htim" is "TIM_HandleTypeDef *".(˜¯Œû8ø¿¬úÈ1
+uc:S5276 "Uimplicit conversion loses integer precision: 'int' to 'uint8_t' (aka 'unsigned char')(²¡—çÿÿÿÿÿ8ñğ–É1
+uc:S5276¡"Uimplicit conversion loses integer precision: 'int' to 'uint8_t' (aka 'unsigned char')(÷Š¸‚ùÿÿÿÿ8Ã³¢‰É1
+fc:S134"MRefactor this code to not nest more than 3 if|for|do|while|switch statements.(¦àşI8ùğ–É1
+‚c:S995í"hMake the type of this parameter a pointer-to-const. The current type of "htim" is "TIM_HandleTypeDef *".(˜¯Œû8€œÉ1
