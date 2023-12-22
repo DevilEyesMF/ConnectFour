@@ -31,6 +31,14 @@ typedef enum
     RED = 0,
     YELLOW = 1
 } Color;
+
+typedef enum
+{
+    LEFT = 0b0001,
+    MID = 0b0010,
+    RIGHT = 0b0100,
+    RESTART = 0b1000
+} Button;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -60,6 +68,8 @@ const uint16_t ROW[] = {
         ROW5_Pin,
         ROW6_Pin
 };
+
+uint8_t buttonFlags = 0; // 0000 SRML (restart, right, mid, left)
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,20 +103,7 @@ int main(void)
     HAL_Init();
 
     /* USER CODE BEGIN Init */
-    uint8_t red[7] = {0b01010101,
-                      0b00101010,
-                      0b01010101,
-                      0b00101010,
-                      0b01010101,
-                      0b00101010,
-                      0b01010101};
-    uint8_t yellow[7] = {0b00101010,
-                         0b01010101,
-                         0b00101010,
-                         0b01010101,
-                         0b00101010,
-                         0b01010101,
-                         0b00101010};
+    uint8_t matrix_buffer[2][7];
 
     uint8_t heart[2][7] = {
             {
@@ -157,17 +154,17 @@ int main(void)
             {
                 if (i < 0)
                 {
-                    red[row] = heart[RED][row] << -i;
-                    yellow[row] = heart[YELLOW][row] << -i;
+                    matrix_buffer[RED][row] = heart[RED][row] << -i;
+                    matrix_buffer[YELLOW][row] = heart[YELLOW][row] << -i;
                 }
                 else
                 {
-                    red[row] = heart[RED][row] >> i;
-                    yellow[row] = heart[YELLOW][row] >> i;
+                    matrix_buffer[RED][row] = heart[RED][row] >> i;
+                    matrix_buffer[YELLOW][row] = heart[YELLOW][row] >> i;
                 }
             }
-            memcpy(matrix[RED], red, 7);
-            memcpy(matrix[YELLOW], yellow, 7);
+            memcpy(matrix[RED], matrix_buffer[RED], 7);
+            memcpy(matrix[YELLOW], matrix_buffer[YELLOW], 7);
             HAL_Delay(250);
         }
         /* USER CODE END WHILE */
@@ -392,6 +389,29 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 
         if (color == RED) color = YELLOW;
         else color = RED;
+    }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if(GPIO_Pin == BTN_RESTART_Pin)
+    {
+        buttonFlags |= RESTART;
+    }
+
+    if(GPIO_Pin == BTN_LEFT_Pin)
+    {
+        buttonFlags |= LEFT;
+    }
+
+    if(GPIO_Pin == BTN_RIGHT_Pin)
+    {
+        buttonFlags |= RIGHT;
+    }
+
+    if(GPIO_Pin == BTN_MID_Pin)
+    {
+        buttonFlags |= MID;
     }
 }
 
