@@ -21,15 +21,16 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum {
+typedef enum
+{
     RED = 0,
     YELLOW = 1
-}Color;
+} Color;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -45,15 +46,20 @@ typedef enum {
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-/* USER CODE BEGIN PV */
+TIM_HandleTypeDef htim14;
 
+/* USER CODE BEGIN PV */
+uint8_t red_global[7];
+uint8_t yellow_global[7];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
+void __attribute__((naked)) SysTickDelayCount(unsigned long);
 void updateMatrix(uint8_t* red, uint8_t* yellow);
 /* USER CODE END PFP */
 
@@ -68,49 +74,99 @@ void updateMatrix(uint8_t* red, uint8_t* yellow);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+    /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+    /* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+    /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    HAL_Init();
 
-  /* USER CODE BEGIN Init */
-    uint8_t red[7] = {0b01010101, 0b01010101, 0b01010101, 0b01010101, 0b01010101, 0b01010101, 0b01010101};
-    uint8_t yellow[7] = {0b00101010, 0b00101010, 0b00101010, 0b00101010, 0b00101010, 0b00101010, 0b00101010};
-  /* USER CODE END Init */
+    /* USER CODE BEGIN Init */
+    uint8_t red[7] = {0b01010101,
+                      0b00101010,
+                      0b01010101,
+                      0b00101010,
+                      0b01010101,
+                      0b00101010,
+                      0b01010101};
+    uint8_t yellow[7] = {0b00101010,
+                         0b01010101,
+                         0b00101010,
+                         0b01010101,
+                         0b00101010,
+                         0b01010101,
+                         0b00101010};
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    uint8_t heart[2][7] = {
+            {
+                    0b00000000,
+                    0b00110110,
+                    0b01001001,
+                    0b01000001,
+                    0b00100010,
+                    0b00010100,
+                    0b00001000
+            },
+            {
+                    0b00000000,
+                    0b00000000,
+                    0b00110110,
+                    0b00111110,
+                    0b00011100,
+                    0b00001000,
+                    0b00000000
+            }
+    };
+/* USER CODE END Init */
 
-  /* USER CODE BEGIN SysInit */
+/* Configure the system clock */
+    SystemClock_Config();
+
+/* USER CODE BEGIN SysInit */
     __enable_irq();
-  /* USER CODE END SysInit */
+/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-  /* USER CODE BEGIN 2 */
+/* Initialize all configured peripherals */
+    MX_GPIO_Init();
+    MX_I2C1_Init();
+    MX_TIM14_Init();
+/* USER CODE BEGIN 2 */
+    HAL_TIM_Base_Start_IT(&htim14);
+/* USER CODE END 2 */
 
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+/* Infinite loop */
+/* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
     while (1)
     {
+        for (int i = -7; i <= 7; i++)
+        {
+            for (int row = 0; row < 7; row++)
+            {
+                if(i < 0)
+                {
+                    red[row] = heart[RED][row] << -i;
+                    yellow[row] = heart[YELLOW][row] << -i;
+                }
+                else
+                {
+                    red[row] = heart[RED][row] >> i;
+                    yellow[row] = heart[YELLOW][row] >> i;
+                }
+                            }
+            memcpy(red_global, red, 7);
+            memcpy(yellow_global, yellow, 7);
+            HAL_Delay(200);
+        }
+/* USER CODE END WHILE */
 
-        updateMatrix(red, yellow);
-
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+/* USER CODE BEGIN 3 */
     }
 #pragma clang diagnostic pop
-  /* USER CODE END 3 */
+/* USER CODE END 3 */
 }
 
 /**
@@ -119,43 +175,43 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage
-  */
-  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+    /** Configure the main internal regulator output voltage
+    */
+    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
-  RCC_OscInitStruct.PLL.PLLN = 8;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    /** Initializes the RCC Oscillators according to the specified parameters
+    * in the RCC_OscInitTypeDef structure.
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
+    RCC_OscInitStruct.PLL.PLLN = 8;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+    /** Initializes the CPU, AHB and APB buses clocks
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                  | RCC_CLOCKTYPE_PCLK1;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 /**
@@ -166,43 +222,74 @@ void SystemClock_Config(void)
 static void MX_I2C1_Init(void)
 {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
+    /* USER CODE BEGIN I2C1_Init 0 */
 
-  /* USER CODE END I2C1_Init 0 */
+    /* USER CODE END I2C1_Init 0 */
 
-  /* USER CODE BEGIN I2C1_Init 1 */
+    /* USER CODE BEGIN I2C1_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x10707DBC;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    /* USER CODE END I2C1_Init 1 */
+    hi2c1.Instance = I2C1;
+    hi2c1.Init.Timing = 0x10707DBC;
+    hi2c1.Init.OwnAddress1 = 0;
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c1.Init.OwnAddress2 = 0;
+    hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-  /** Configure Analogue filter
+    /** Configure Analogue filter
+    */
+    if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+    /** Configure Digital filter
+    */
+    if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN I2C1_Init 2 */
+
+    /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief TIM14 Initialization Function
+  * @param None
+  * @retval None
   */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
+static void MX_TIM14_Init(void)
+{
 
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
+    /* USER CODE BEGIN TIM14_Init 0 */
 
-  /* USER CODE END I2C1_Init 2 */
+    /* USER CODE END TIM14_Init 0 */
+
+    /* USER CODE BEGIN TIM14_Init 1 */
+
+    /* USER CODE END TIM14_Init 1 */
+    htim14.Instance = TIM14;
+    htim14.Init.Prescaler = 6400 - 1;
+    htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim14.Init.Period = 100 - 1;
+    htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN TIM14_Init 2 */
+
+    /* USER CODE END TIM14_Init 2 */
 
 }
 
@@ -213,59 +300,66 @@ static void MX_I2C1_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, ROW0_Pin|ROW1_Pin|ROW2_Pin|ROW3_Pin
-                          |ROW4_Pin|ROW5_Pin|ROW6_Pin, GPIO_PIN_RESET);
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOA, ROW0_Pin | ROW1_Pin | ROW2_Pin | ROW3_Pin
+                             | ROW4_Pin | ROW5_Pin | ROW6_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : EN_RED_Pin */
-  GPIO_InitStruct.Pin = EN_RED_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EN_RED_GPIO_Port, &GPIO_InitStruct);
+    /*Configure GPIO pin : EN_YEL_Pin */
+    GPIO_InitStruct.Pin = EN_YEL_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(EN_YEL_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BTN_LEFT_Pin BTN_MID_Pin BTN_RIGHT_Pin BTN_RESTART_Pin */
-  GPIO_InitStruct.Pin = BTN_LEFT_Pin|BTN_MID_Pin|BTN_RIGHT_Pin|BTN_RESTART_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    /*Configure GPIO pins : BTN_LEFT_Pin BTN_MID_Pin BTN_RIGHT_Pin BTN_RESTART_Pin */
+    GPIO_InitStruct.Pin = BTN_LEFT_Pin | BTN_MID_Pin | BTN_RIGHT_Pin | BTN_RESTART_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ROW0_Pin ROW1_Pin ROW2_Pin ROW3_Pin
-                           ROW4_Pin ROW5_Pin ROW6_Pin */
-  GPIO_InitStruct.Pin = ROW0_Pin|ROW1_Pin|ROW2_Pin|ROW3_Pin
-                          |ROW4_Pin|ROW5_Pin|ROW6_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    /*Configure GPIO pins : ROW0_Pin ROW1_Pin ROW2_Pin ROW3_Pin
+                             ROW4_Pin ROW5_Pin ROW6_Pin */
+    GPIO_InitStruct.Pin = ROW0_Pin | ROW1_Pin | ROW2_Pin | ROW3_Pin
+                          | ROW4_Pin | ROW5_Pin | ROW6_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : EN_YEL_Pin */
-  GPIO_InitStruct.Pin = EN_YEL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EN_YEL_GPIO_Port, &GPIO_InitStruct);
+    /*Configure GPIO pin : EN_RED_Pin */
+    GPIO_InitStruct.Pin = EN_RED_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(EN_RED_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+void __attribute__((naked)) SysTickDelayCount(unsigned long ulCount)
+{
+    __asm("sub r0, #1\n"
+          "bne SysTickDelayCount\n"
+          "bx lr");
+}
+
 void updateMatrix(uint8_t* red, uint8_t* yellow)
 {
     static const uint16_t Pin[] = {
@@ -285,15 +379,23 @@ void updateMatrix(uint8_t* red, uint8_t* yellow)
         HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
         HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &red[row], sizeof(red[row]), HAL_MAX_DELAY);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_RESET);
-        HAL_Delay(1);
+        SysTickDelayCount(1000);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_SET);
         // YELLOW
         HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
         HAL_I2C_Mem_Write(&hi2c1, LED_DRIVER_ADDRESS, 0x02, 1, &yellow[row], sizeof(yellow[row]), HAL_MAX_DELAY);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_RESET);
-        HAL_Delay(1);
+        SysTickDelayCount(1000);
         HAL_GPIO_WritePin(GPIOA, Pin[row], GPIO_PIN_SET);
+    }
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+    if (htim->Instance == TIM14)
+    {
+        updateMatrix(red_global, yellow_global);
     }
 }
 
@@ -305,7 +407,7 @@ void updateMatrix(uint8_t* red, uint8_t* yellow)
   */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
+    /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
 #pragma clang diagnostic push
@@ -315,7 +417,7 @@ void Error_Handler(void)
         //
     }
 #pragma clang diagnostic pop
-  /* USER CODE END Error_Handler_Debug */
+    /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT

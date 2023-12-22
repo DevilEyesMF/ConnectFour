@@ -28,3 +28,13 @@ d
 :
 
 .mxproject,d\e\decd066c230086d2f7c67ef3567150196d926ffd
+L
+Core/Src/stm32g0xx_hal_msp.c,e\1\e14a68d3d023223ced5eccabc22a1fb9a081e2da
+`
+0Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal.h,4\6\46b9c828db424be6931736600ce42cc61eb0c252
+d
+4Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_tim.c,e\8\e87ab7c1034652dda272f44011f0887923dbc556
+M
+Core/Inc/stm32g0xx_hal_conf.h,6\6\66b778d91290dd96bb2eb0e16859daefaf2ef137
+G
+Core/Inc/stm32g0xx_it.h,e\3\e3a5d54d8bd1d7a2bdec10f3d0766a321f9fdead
