@@ -80,6 +80,7 @@ static void MX_I2C1_Init(void);
 static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
 void heartScroll(void);
+int dropCoin(uint8_t matrix_buffer[][7], uint8_t currentPlayer);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -157,11 +158,13 @@ int main(void)
         // MIDDLE BUTTON PRESSED
         if (buttonFlags & MID)
         {
-            // TODO middle button
-            // switch player
-            matrix_buffer[currentPlayer][0] = 0; //temp
-            currentPlayer ^= 1;
-            matrix_buffer[currentPlayer][0] = 0b00001000;
+            if(dropCoin(matrix_buffer, currentPlayer))
+            {
+                // switch player
+                currentPlayer ^= 1;
+                matrix_buffer[currentPlayer][0] = 0b00001000;
+                // TODO check for winning condition
+            }
             // reset flag
             buttonFlags ^= MID;
         }
@@ -477,6 +480,28 @@ void heartScroll()
         memcpy(matrix, matrix_buffer, sizeof(matrix));
         HAL_Delay(250);
     }
+}
+
+int dropCoin(uint8_t matrix_buffer[][7], uint8_t currentPlayer)
+{
+    int row = 0;
+    uint8_t column = matrix_buffer[currentPlayer][row];
+
+    while(row < 6 && !(column & (matrix_buffer[RED][row+1] | matrix_buffer[YELLOW][row+1])))
+    {
+        // drop the coin one row
+        matrix_buffer[currentPlayer][row+1] |= column;
+        // remove the coin from the previous row
+        matrix_buffer[currentPlayer][row] &= (column ^ 0b01111111);
+        // create drop animation
+        HAL_Delay(200);
+        memcpy(matrix, matrix_buffer, sizeof(matrix));
+        // increment row
+        row++;
+    }
+    // return 0 if the coin didn't drop
+    if(row) return 1;
+    else return 0;
 }
 
 /* USER CODE END 4 */
