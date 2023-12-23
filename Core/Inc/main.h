@@ -61,12 +61,16 @@ void Error_Handler(void);
 #define EN_YEL_GPIO_Port GPIOC
 #define BTN_LEFT_Pin GPIO_PIN_0
 #define BTN_LEFT_GPIO_Port GPIOA
+#define BTN_LEFT_EXTI_IRQn EXTI0_1_IRQn
 #define BTN_MID_Pin GPIO_PIN_1
 #define BTN_MID_GPIO_Port GPIOA
+#define BTN_MID_EXTI_IRQn EXTI0_1_IRQn
 #define BTN_RIGHT_Pin GPIO_PIN_2
 #define BTN_RIGHT_GPIO_Port GPIOA
+#define BTN_RIGHT_EXTI_IRQn EXTI2_3_IRQn
 #define BTN_RESTART_Pin GPIO_PIN_3
 #define BTN_RESTART_GPIO_Port GPIOA
+#define BTN_RESTART_EXTI_IRQn EXTI2_3_IRQn
 #define ROW0_Pin GPIO_PIN_4
 #define ROW0_GPIO_Port GPIOA
 #define ROW1_Pin GPIO_PIN_5
