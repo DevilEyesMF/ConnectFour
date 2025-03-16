@@ -24,21 +24,23 @@
 #include <stdlib.h>
 
 #include "string.h"
+#include "font.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 typedef enum : uint8_t {
-    RED = 0,
+    RED    = 0,
     YELLOW = 1
 } Color;
 
 typedef enum : uint8_t {
-    LEFT = 0b0001,
-    MID = 0b0010,
-    RIGHT = 0b0100,
+    LEFT    = 0b0001,
+    MID     = 0b0010,
+    RIGHT   = 0b0100,
     RESTART = 0b1000
 } Button;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -61,13 +63,13 @@ TIM_HandleTypeDef htim14;
 uint8_t matrix[2][NUMBER_OF_ROWS];
 
 const uint16_t ROW[] = {
-        ROW0_Pin,
-        ROW1_Pin,
-        ROW2_Pin,
-        ROW3_Pin,
-        ROW4_Pin,
-        ROW5_Pin,
-        ROW6_Pin
+    ROW0_Pin,
+    ROW1_Pin,
+    ROW2_Pin,
+    ROW3_Pin,
+    ROW4_Pin,
+    ROW5_Pin,
+    ROW6_Pin
 };
 
 uint8_t buttonFlags = 0; // 0000 SRML (restart, right, mid, left)
@@ -80,6 +82,7 @@ static void MX_I2C1_Init(void);
 static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
 void heartScroll(void);
+void textScroll(const char* text);
 int dropCoin(uint8_t matrix_buffer[][NUMBER_OF_ROWS], uint8_t currentPlayer);
 void checkWinningCondition(uint8_t matrix_buffer[][NUMBER_OF_ROWS], uint8_t row, uint8_t location, Color currentPlayer);
 void displayWinner(const uint8_t winning[NUMBER_OF_ROWS], Color currentPlayer);
@@ -170,7 +173,8 @@ int main(void) {
 
         // RESTART BUTTON PRESSED
         if (buttonFlags & RESTART) {
-            heartScroll();
+            // heartScroll();
+            textScroll("Remko");
             memset(matrix_buffer, 0, sizeof(matrix_buffer));
             // RED starts the game
             currentPlayer = RED;
@@ -220,7 +224,7 @@ void SystemClock_Config(void) {
     /** Initializes the CPU, AHB and APB buses clocks
     */
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-                                  | RCC_CLOCKTYPE_PCLK1;
+            | RCC_CLOCKTYPE_PCLK1;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -236,7 +240,6 @@ void SystemClock_Config(void) {
   * @retval None
   */
 static void MX_I2C1_Init(void) {
-
     /* USER CODE BEGIN I2C1_Init 0 */
 
     /* USER CODE END I2C1_Init 0 */
@@ -271,7 +274,6 @@ static void MX_I2C1_Init(void) {
     /* USER CODE BEGIN I2C1_Init 2 */
 
     /* USER CODE END I2C1_Init 2 */
-
 }
 
 /**
@@ -280,7 +282,6 @@ static void MX_I2C1_Init(void) {
   * @retval None
   */
 static void MX_TIM14_Init(void) {
-
     /* USER CODE BEGIN TIM14_Init 0 */
 
     /* USER CODE END TIM14_Init 0 */
@@ -300,7 +301,6 @@ static void MX_TIM14_Init(void) {
     /* USER CODE BEGIN TIM14_Init 2 */
 
     /* USER CODE END TIM14_Init 2 */
-
 }
 
 /**
@@ -310,8 +310,8 @@ static void MX_TIM14_Init(void) {
   */
 static void MX_GPIO_Init(void) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+    /* USER CODE BEGIN MX_GPIO_Init_1 */
+    /* USER CODE END MX_GPIO_Init_1 */
 
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -323,7 +323,7 @@ static void MX_GPIO_Init(void) {
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOA, ROW0_Pin | ROW1_Pin | ROW2_Pin | ROW3_Pin
-                             | ROW4_Pin | ROW5_Pin | ROW6_Pin, GPIO_PIN_RESET);
+                      | ROW4_Pin | ROW5_Pin | ROW6_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
@@ -344,7 +344,7 @@ static void MX_GPIO_Init(void) {
     /*Configure GPIO pins : ROW0_Pin ROW1_Pin ROW2_Pin ROW3_Pin
                              ROW4_Pin ROW5_Pin ROW6_Pin */
     GPIO_InitStruct.Pin = ROW0_Pin | ROW1_Pin | ROW2_Pin | ROW3_Pin
-                          | ROW4_Pin | ROW5_Pin | ROW6_Pin;
+            | ROW4_Pin | ROW5_Pin | ROW6_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -364,8 +364,8 @@ static void MX_GPIO_Init(void) {
     HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+    /* USER CODE BEGIN MX_GPIO_Init_2 */
+    /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -379,8 +379,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
         if (color == RED) {
             HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_SET);
-        }
-        else {
+        } else {
             HAL_GPIO_WritePin(EN_RED_GPIO_Port, EN_RED_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(EN_YEL_GPIO_Port, EN_YEL_Pin, GPIO_PIN_SET);
         }
@@ -419,38 +418,66 @@ void heartScroll() {
     uint8_t matrix_buffer[2][NUMBER_OF_ROWS];
 
     static const uint8_t heart[2][NUMBER_OF_ROWS] = {
-            {
-                    0b00000000,
-                    0b00110110,
-                    0b01001001,
-                    0b01000001,
-                    0b00100010,
-                    0b00010100,
-                    0b00001000
-            },
-            {
-                    0b00000000,
-                    0b00000000,
-                    0b00110110,
-                    0b00111110,
-                    0b00011100,
-                    0b00001000,
-                    0b00000000
-            }
+        {
+            0b00000000,
+            0b00110110,
+            0b01001001,
+            0b01000001,
+            0b00100010,
+            0b00010100,
+            0b00001000
+        },
+        {
+            0b00000000,
+            0b00000000,
+            0b00110110,
+            0b00111110,
+            0b00011100,
+            0b00001000,
+            0b00000000
+        }
     };
 
     for (int i = -7; i <= 7; i++) {
         for (int row = 0; row < NUMBER_OF_ROWS; row++) {
             if (i < 0) {
-                matrix_buffer[RED][row] = (uint8_t)(heart[RED][row] << -i);
-                matrix_buffer[YELLOW][row] = (uint8_t)(heart[YELLOW][row] << -i);
-            }
-            else {
+                matrix_buffer[RED][row] = (uint8_t) (heart[RED][row] << -i);
+                matrix_buffer[YELLOW][row] = (uint8_t) (heart[YELLOW][row] << -i);
+            } else {
                 matrix_buffer[RED][row] = heart[RED][row] >> i;
                 matrix_buffer[YELLOW][row] = heart[YELLOW][row] >> i;
             }
         }
         memcpy(matrix, matrix_buffer, sizeof(matrix));
+        HAL_Delay(250);
+    }
+}
+
+void textScroll(const char* text) {
+    uint8_t matrix_buffer[NUMBER_OF_ROWS] = {0};
+
+    int str_len = strlen(text);
+
+    // loop over characters
+    for (int i = 0; i < str_len; i++) {
+        // loop over columns
+        for (int j = 1; j < 8; j++) {
+            // loop over rows
+            for (int row = 0; row < NUMBER_OF_ROWS; row++) {
+                matrix_buffer[row] <<= 1;
+                matrix_buffer[row] |= (font[text[i] - ' '][row] >> (7 - j)) & 0x01;
+            }
+            memcpy(matrix[RED], matrix_buffer, sizeof(matrix[RED]));
+            HAL_Delay(250);
+        }
+    }
+    // loop over columns
+    for (int i = 0; i < NUMBER_OF_ROWS; i++) {
+        // loop over rows
+        for (int row = 0; row < NUMBER_OF_ROWS; row++) {
+            matrix_buffer[row] <<= 1;
+        }
+        memcpy(matrix[RED], matrix_buffer, sizeof(matrix[RED]));
         HAL_Delay(250);
     }
 }
@@ -474,7 +501,8 @@ int dropCoin(uint8_t matrix_buffer[][7], Color currentPlayer) {
     return row;
 }
 
-void checkWinningCondition(uint8_t matrix_buffer[][NUMBER_OF_ROWS], uint8_t row, uint8_t location, uint8_t currentPlayer) {
+void checkWinningCondition(uint8_t matrix_buffer[][NUMBER_OF_ROWS], uint8_t row, uint8_t location,
+                           uint8_t currentPlayer) {
     uint8_t cur_row;
     uint8_t cur_location;
     uint8_t count;
