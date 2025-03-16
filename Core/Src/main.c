@@ -21,6 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdlib.h>
+
 #include "string.h"
 /* USER CODE END Includes */
 
@@ -473,113 +475,125 @@ int dropCoin(uint8_t matrix_buffer[][7], Color currentPlayer) {
 }
 
 void checkWinningCondition(uint8_t matrix_buffer[][NUMBER_OF_ROWS], uint8_t row, uint8_t location, uint8_t currentPlayer) {
-    uint8_t flags = 0b0000; // TOP LEFT RIGHT DOWN
-    // check top
-    if (row >= 3)
-        flags |= 0b1000; // can't place token underneath other tokens
-    // check left
-    if (location <= 0b0001000) {
-        flags |= 0b0100;
-        uint8_t winning[NUMBER_OF_ROWS] = {0};
-        winning[row] = location;
-        for (int i = 1; i < 4; i++) {
-            if (!(matrix_buffer[currentPlayer][row] & location << i))
-                break;
-            winning[row] |= location << i;
-            if (i == 3) {
-                displayWinner(winning, currentPlayer);
-                return;
-            }
-        }
-    }
-    // check right
-    if (location >= 0b0001000) {
-        flags |= 0b0010;
-        uint8_t winning[NUMBER_OF_ROWS] = {0};
-        winning[row] = location;
-        for (int i = 1; i < 4; i++) {
-            if (!(matrix_buffer[currentPlayer][row] & location >> i))
-                break;
-            winning[row] |= location >> i;
-            if (i == 3) {
-                displayWinner(winning, currentPlayer);
-                return;
-            }
-        }
-    }
-    // check down
-    if (row <= NUMBER_OF_ROWS - 4) {
-        flags |= 0b0001;
-        uint8_t winning[NUMBER_OF_ROWS] = {0};
-        winning[row] |= location;
-        for (int i = 1; i < 4; i++) {
-            if (!(matrix_buffer[currentPlayer][row+i] & location))
-                break;
-            winning[row+i] |= location;
-            if (i == 3) {
-                displayWinner(winning, currentPlayer);
-                return;
-            }
-        }
-    }
-    // check top left
-    if ((flags & 0b1100) == 0b1100) {
-        uint8_t winning[NUMBER_OF_ROWS] = {0};
-        winning[row] |= location;
-        for (int i = 1; i < 4; i++) {
-            if (!(matrix_buffer[currentPlayer][row-i] & location << i))
-                break;
-            winning[row-i] |= location << i;
-            if (i == 3) {
-                displayWinner(winning, currentPlayer);
-                return;
-            }
-        }
-    }
-    // check top right
-    if ((flags & 0b1010) == 0b1010) {
-        uint8_t winning[NUMBER_OF_ROWS] = {0};
-        winning[row] |= location;
-        for (int i = 1; i < 4; i++) {
-            if (!(matrix_buffer[currentPlayer][row-i] & location >> i))
-                break;
-            winning[row-i] |= location >> i;
-            if (i == 3) {
-                displayWinner(winning, currentPlayer);
-                return;
-            }
-        }
-    }
-    // check down left
-    if ((flags & 0b0101) == 0b0101) {
-        if ((flags & 0b1100) == 0b1100) {
-            uint8_t winning[NUMBER_OF_ROWS] = {0};
-            winning[row] |= location;
-            for (int i = 1; i < 4; i++) {
-                if (!(matrix_buffer[currentPlayer][row+i] & location << i))
-                    break;
-                winning[row+i] |= location << i;
-                if (i == 3) {
-                    displayWinner(winning, currentPlayer);
+    uint8_t cur_row;
+    uint8_t cur_location;
+    uint8_t count;
+    // check horizontal
+    do {
+        count = 0;
+        uint8_t winner[NUMBER_OF_ROWS] = {0};
+        // check left
+        cur_row = row;
+        cur_location = location;
+        while (cur_location <= 0b01000000) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
                     return;
                 }
-            }
+                cur_location <<= 1;
+            } else break;
         }
-    }
-    // check down right
-    if ((flags & 0b0011) == 0b0011) {
-        uint8_t winning[NUMBER_OF_ROWS] = {0};
-        winning[row] |= location;
-        for (int i = 1; i < 4; i++) {
-            if (!(matrix_buffer[currentPlayer][row+i] & location >> i))
-                break;
-            winning[row+i] |= location >> i;
-            if (i == 3) {
-                displayWinner(winning, currentPlayer);
-                return;
-            }
+        // check right
+        cur_location = location >> 1;
+        while (cur_location >= 0b00000001) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
+                    return;
+                }
+                cur_location >>= 1;
+            } else break;
         }
-    }
+    } while (0);
+
+    // check vertical
+    do {
+        count = 0;
+        uint8_t winner[NUMBER_OF_ROWS] = {0};
+        // check down
+        cur_row = row + 1;
+        while (cur_row < NUMBER_OF_ROWS) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
+                    return;
+                }
+                cur_row++;
+            } else break;
+        }
+    } while (0);
+
+    // check diagonal /.
+    do {
+        count = 0;
+        uint8_t winner[NUMBER_OF_ROWS] = {0};
+        // check up right
+        cur_row = row;
+        cur_location = location;
+        while ((cur_location >= 0b00000001) && (cur_row > 0)) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
+                    return;
+                }
+                cur_row--;
+                cur_location >>= 1;
+            } else break;
+        }
+        // check down left
+        cur_row = row + 1;
+        cur_location = location << 1;
+        while ((cur_location <= 0b01000000) && (cur_row < NUMBER_OF_ROWS)) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
+                    return;
+                }
+                cur_row++;
+                cur_location <<= 1;
+            } else break;
+        }
+    } while (0);
+
+    // check diagonal \.
+    do {
+        count = 0;
+        uint8_t winner[NUMBER_OF_ROWS] = {0};
+        // check down right
+        cur_row = row;
+        cur_location = location;
+        while ((cur_location >= 0b00000001) && (cur_row < NUMBER_OF_ROWS)) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
+                    return;
+                }
+                cur_row++;
+                cur_location >>= 1;
+            } else break;
+        }
+        // check up left
+        cur_row = row - 1;
+        cur_location = location << 1;
+        while ((cur_location <= 0b01000000) && (cur_row > 0)) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
+                    return;
+                }
+                cur_row--;
+                cur_location <<= 1;
+            } else break;
+        }
+    } while (0);
 }
 
 void displayWinner(const uint8_t* winning, Color currentPlayer) {
