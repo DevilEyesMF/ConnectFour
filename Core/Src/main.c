@@ -455,6 +455,7 @@ void heartScroll() {
 
 void textScroll(const char* text) {
     uint8_t matrix_buffer[NUMBER_OF_ROWS] = {0};
+    memcpy(matrix[YELLOW], matrix_buffer, sizeof(matrix[RED]));
 
     int str_len = strlen(text);
 
