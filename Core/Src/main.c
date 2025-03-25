@@ -174,7 +174,7 @@ int main(void) {
         // RESTART BUTTON PRESSED
         if (buttonFlags & RESTART) {
             // heartScroll();
-            textScroll("Remko");
+            textScroll("Name");
             memset(matrix_buffer, 0, sizeof(matrix_buffer));
             // RED starts the game
             currentPlayer = RED;
@@ -542,6 +542,19 @@ void checkWinningCondition(uint8_t matrix_buffer[][NUMBER_OF_ROWS], uint8_t row,
     do {
         count = 0;
         uint8_t winner[NUMBER_OF_ROWS] = {0};
+        // check up
+        cur_row = row;
+        cur_location = location;
+        while (cur_row > 0) {
+            if (matrix_buffer[currentPlayer][cur_row] & cur_location) {
+                winner[cur_row] |= cur_location;
+                if (++count == 4) {
+                    displayWinner(winner, currentPlayer);
+                    return;
+                }
+                cur_row--;
+            } else break;
+        }
         // check down
         cur_row = row + 1;
         while (cur_row < NUMBER_OF_ROWS) {
